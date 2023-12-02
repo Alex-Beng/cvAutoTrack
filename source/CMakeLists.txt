@@ -113,7 +113,7 @@ FetchContent_MakeAvailable(cereal)
 FetchContent_Declare(fmt GIT_REPOSITORY https://github.com/fmtlib/fmt.git GIT_TAG 10.1.1)
 FetchContent_MakeAvailable(fmt)
 
-target_link_libraries(cvAutoTrack PRIVATE  ${OpenCV_LIBS} cereal::cereal fmt::fmt-header-only d3d11.lib d3dcompiler.lib dxgi.lib)
+target_link_libraries(cvAutoTrack PRIVATE  ${OpenCV_LIBS} cereal::cereal fmt::fmt-header-only d3d11.lib d3dcompiler.lib)
 
 if(BUILD_SUBMODULE)
     if(CMAKE_BUILD_TYPE MATCHES "Debug")

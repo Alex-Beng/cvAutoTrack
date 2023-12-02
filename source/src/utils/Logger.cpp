@@ -164,11 +164,7 @@ std::string TianLi::Utils::Logger::get_gpu_name()
   IDXGIFactory* pFactory = nullptr;
   try
   {
-    HRESULT hr = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)(&pFactory));
-    if (FAILED(hr))
-    {
-      return "Unknown";
-    }
+    HRESULT hr;
 
     hr = pFactory->EnumAdapters(0, &pAdapter);
     if (FAILED(hr))
