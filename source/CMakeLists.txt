@@ -58,48 +58,25 @@ add_library(cvAutoTrack SHARED
     ${VerRcFile}
 )
 
-macro(add_pch_define target pch_header_file pch_source_file)
-    if(MSVC)
-        get_filename_component(pch_file_name ${pch_header_file} NAME_WE)
-
-        if(CMAKE_CONFIGURATION_TYPES)
-        #如果有配置选项（Debug/ReLease），路径添加以及配置选项
-            set(pch_dir "${CMAKE_CURRENT_BINARY_DIR}/pch/${CMAKE_CFG_INTDIR}")
-        else(CMAKE_CONFIGURATION_TYPES)
-            SET(pch_dir "${CMAKE_CURRENT_BINARY_DIR}/pch")
-        endif(CMAKE_CONFIGURATION_TYPES)
-
-        file(MAKE_DIRECTORY ${pch_dir})
-
-        set_target_properties(${target} PROPERTIES COMPILE_FLAGS "/Yu${pch_header_file}.h /FI${pch_header_file}.h /Fp${pch_dir}/${target}_${pch_file_name}.pch")
-
-        set_source_files_properties(${pch_source_file} PROPERTIES COMPILE_FLAGS "/Yc${pch_file_name}.h")
-        
-        set_target_properties(${target} PROPERTIES PCH_OUTPUT_DIR ${pch_dir})
-        set_target_properties(${target} PROPERTIES PCH_OUTPUT_NAME ${target}_${pch_file_name}.pch)
-        set_source_files_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${pch_dir}/${target}_${pch_file_name}.pch")
-    endif()
-
-endmacro(add_pch_define)
-
 
 
 set_target_properties(cvAutoTrack PROPERTIES VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
 set_target_properties(cvAutoTrack PROPERTIES FOLDER "cvAutoTrack")
 
-set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/pch.cpp PROPERTIES COMPILE_FLAGS "/Ycpch.h")
-set_target_properties(cvAutoTrack PROPERTIES COMPILE_FLAGS "/Yu${CMAKE_CURRENT_SOURCE_DIR}/src/pch.h")
-
-
-#add_pch_define(cvAutoTrack ${CMAKE_CURRENT_SOURCE_DIR}/src/pch.h ${CMAKE_CURRENT_SOURCE_DIR}/src/pch.cpp)
+add_pch_define(cvAutoTrack ${CMAKE_CURRENT_SOURCE_DIR}/src/pch.h ${CMAKE_CURRENT_SOURCE_DIR}/src/pch.cpp)
         
 add_compile_options(/MP)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 set_target_properties(cvAutoTrack PROPERTIES COMPILE_FLAGS "/MP")
 
-
-set_property(TARGET cvAutoTrack PROPERTY  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+if(BUILD_SUBMODULE)
+    set_property(TARGET cvAutoTrack PROPERTY  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+    message(STATUS "使用Opencv动态库")
+else()
+    set_property(TARGET cvAutoTrack PROPERTY  MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    message(STATUS "使用Opencv静态库")
+endif()
 
 include(FetchContent)
 # 配置cereal
@@ -109,9 +86,11 @@ set(SKIP_PERFORMANCE_COMPARISON ON)
 set(BUILD_TESTS OFF)
 FetchContent_Declare(cereal GIT_REPOSITORY https://github.com/USCiLab/cereal.git GIT_TAG v1.3.2)
 FetchContent_MakeAvailable(cereal)
+set_target_properties(cereal PROPERTIES FOLDER "cvAutoTrack/dependencies")
 # 配置fmt
 FetchContent_Declare(fmt GIT_REPOSITORY https://github.com/fmtlib/fmt.git GIT_TAG 10.1.1)
 FetchContent_MakeAvailable(fmt)
+set_target_properties(fmt PROPERTIES FOLDER "cvAutoTrack/dependencies")
 
 target_link_libraries(cvAutoTrack PRIVATE  ${OpenCV_LIBS} cereal::cereal fmt::fmt-header-only d3d11.lib d3dcompiler.lib)
 
